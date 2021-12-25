@@ -2,7 +2,7 @@ import pygame
 
 pygame.init()
 
-
+ # Ветка дя ромы
 class Object(pygame.sprite.Sprite):  # Создание базового объекта
     def __init__(self, path, coords, *args):
         super().__init__(*args)
