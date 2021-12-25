@@ -4,7 +4,6 @@ from Objects import *
 pygame.init()
 settings = {}
 sprites_group = pygame.sprite.Group()
-clock = pygame.time.Clock()
 
 with open("settings.txt", "r", encoding="utf-8") as f:
     for i in f.read().split("\n"):
@@ -13,7 +12,6 @@ with open("settings.txt", "r", encoding="utf-8") as f:
 
 # Здесь будет происходить выгрузка параметров из файла settings.txt
 size = list(map(int, settings["size"]))
-FPS = int(settings["FPS"][0])
 
 screen = pygame.display.set_mode(size)
 run = True
@@ -35,6 +33,5 @@ while run:
     sprites_group.draw(screen)
     sprites_group.update(events, m_pos)
     pygame.display.flip()
-    clock.tick(FPS)
 
 pygame.quit()
