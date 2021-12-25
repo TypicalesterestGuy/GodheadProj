@@ -17,8 +17,11 @@ screen = pygame.display.set_mode(size)
 run = True
 
 obj = Object('textures/morgenshtern.jpg', (100, 100))
+obj2 = Object('textures/morgenshtern.jpg', (100 + obj.rect.width, 100))
 obj.reform(size[0], size[1])
+obj2.reform(size[0], size[1])
 sprites_group.add(obj)
+sprites_group.add(obj2)
 
 while run:
     events = [event.type for event in pygame.event.get()]
