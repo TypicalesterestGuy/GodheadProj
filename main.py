@@ -23,8 +23,8 @@ sprites_group.add(obj)
 while run:
     events = [event.type for event in pygame.event.get()]
     m_pos = pygame.mouse.get_pos()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    for event in events:
+        if event == pygame.QUIT:
             run = False
             break
     sprites_group.draw(screen)
