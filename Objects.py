@@ -2,7 +2,8 @@ import pygame
 
 pygame.init()
 
- # Моя ветка
+
+# Моя ветка
 class Object(pygame.sprite.Sprite):  # Создание базового объекта
     def __init__(self, path, coords, *args):
         super().__init__(*args)
@@ -36,9 +37,16 @@ class Player(Object):
 
     def update(self, events, m_pos, *args):
         super().update(*args)
-        if pygame.KEYDOWN in events:
-            pass
-
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.rect.x -= 20
+                if event.key == pygame.K_RIGHT:
+                    self.rect.x += 20
+                if event.key == pygame.K_UP:
+                    self.rect.y -= 20
+                if event.key == pygame.K_DOWN:
+                    self.rect.y += 20
 
 
 class SolidObj(Object):

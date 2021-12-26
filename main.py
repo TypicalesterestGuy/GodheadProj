@@ -20,14 +20,17 @@ obj = Object('textures/morgenshtern.jpg', (100, 100))
 obj2 = Object('textures/morgenshtern.jpg', (100 + obj.rect.width, 100))
 obj.reform(size[0], size[1])
 obj2.reform(size[0], size[1])
+player = Player('textures/morgenshtern.jpg', (300, 300))
 sprites_group.add(obj)
 sprites_group.add(obj2)
+sprites_group.add(player)
 
 while run:
-    events = [event.type for event in pygame.event.get()]
+    screen.fill((0, 0, 0))
+    events = [event for event in pygame.event.get()]
     m_pos = pygame.mouse.get_pos()
     for event in events:
-        if event == pygame.QUIT:
+        if event.type == pygame.QUIT:
             run = False
             break
     sprites_group.draw(screen)
