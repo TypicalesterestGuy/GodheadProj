@@ -31,22 +31,24 @@ class Object(pygame.sprite.Sprite):  # Создание базового объ�
 
 
 class Player(Object):
-    def __init__(self, path, coords, speed=10, *args):
+    def __init__(self, path, coords, speed=100, *args):
         super().__init__(path, coords, *args)
         self.speed = speed
 
-    def update(self, events, m_pos, *args):
+    def reform(self, w, h, FPS):
+        super().reform(w, h)
+        self.speed /= FPS
+
+    def update(self, events, m_pos, keys, *args):
         super().update(*args)
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    self.rect.x -= 20
-                if event.key == pygame.K_RIGHT:
-                    self.rect.x += 20
-                if event.key == pygame.K_UP:
-                    self.rect.y -= 20
-                if event.key == pygame.K_DOWN:
-                    self.rect.y += 20
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += self.speed
+        if keys[pygame.K_UP]:
+            self.rect.y -= self.speed
+        if keys[pygame.K_DOWN]:
+            self.rect.y += self.speed
 
 
 class SolidObj(Object):
