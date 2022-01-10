@@ -18,14 +18,11 @@ FPS = int(*settings["FPS"])
 screen = pygame.display.set_mode(size)
 run = True
 
-obj = Object('textures/morgenshtern.jpg', (100, 100))
-obj2 = Object('textures/morgenshtern.jpg', (100 + obj.rect.width, 100))
+obj = SolidObj('textures/morgenshtern.jpg', (100, 400))
 obj.reform(size[0], size[1])
-obj2.reform(size[0], size[1])
 player = Player('textures/morgenshtern.jpg', (300, 300))
 player.reform(size[0], size[1], FPS)
-sprites_group.add(obj)
-sprites_group.add(obj2)
+solids_objs.add(obj)
 sprites_group.add(player)
 
 clock = pygame.time.Clock()
@@ -38,7 +35,10 @@ while run:
             run = False
             break
     sprites_group.draw(screen)
-    sprites_group.update(events, m_pos, pygame.key.get_pressed())
+
+    solids_objs.draw(screen)
+    solids_objs.update()
+    sprites_group.update(events, m_pos, pygame.key.get_pressed(), solids_objs)
     pygame.display.flip()
     clock.tick(FPS)
 
