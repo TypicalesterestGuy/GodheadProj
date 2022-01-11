@@ -1,4 +1,5 @@
 import pygame
+import random as r
 
 pygame.init()
 
@@ -34,10 +35,13 @@ class Player(Object):
     def __init__(self, path, coords, speed=500, *args):
         super().__init__(path, coords, *args)
         self.speed = speed
+        self.hp = 100
+        self.defense = 10
 
     def reform(self, w, h, FPS):
         super().reform(w, h)
         self.speed /= FPS
+
 
     def update(self, events, m_pos, keys, objs,
                *args):  # Теперь игрок просит список твердых объектов, дабы проверить, где он собсна среди них. Предлагаю сюда посылать только объекты сугубо на экране
@@ -73,6 +77,15 @@ class Player(Object):
                 self.rect.y = i.rect.y - self.rect.height - 1  # Пассивная обработка, которая заставит игрока непрерывно стоять сверху блока. Когда мы доделаем падение, будет весьма полезно
                 i.player_collide["top"] = True
 
+    def on_get_hit(self, damage, knockback, crit):
+        if crit:
+            damage *= r.randrange(2, 3 + 1)
+        if damage >= self.defense:
+            damage -= self.defense
+        else:
+            damage = 0
+        self.hp -= damage
+
 
 class SolidObj(Object):
     def __init__(self, path, coords, *args):
@@ -106,7 +119,67 @@ class SolidObj(Object):
 
 
 class Mob(Object):
-    pass
+    def __init__(self, path, coords, *args):
+        super().__init__(path, coords, *args)
+        self.ai_list = [0, 0, 0]
+        self.velocity = [0, 0]
+
+    def update(self, *args):
+        super().update(*args)
+        self.rect = self.rect.move(*self.velocity)
+        self.ai()
+
+    def ai(self, *args):
+        pass
+
+    def reform(self, w, h):
+        super().reform(w, h)
+
+
+class NPC(Mob):
+    def __init__(self, path, coords, *args):
+        super().__init__(path, coords, *args)
+        self.friendly = False
+        self.hp = 0
+        self.knockback = 0
+        self.contact_damage = False
+        self.damage = 0
+        self.damage_resistance = 0
+        self.boss = False
+        self.tile_collide = False
+
+    def update(self, tiles, objs, player, *args):
+        super().update(*args)
+        for object in objs.sprites():
+            if self.rect.colliderect(object.rect):
+                self.on_get_hit(object.damage, object.knockback, object.crit)
+        if self.hp <= 0:
+            self.on_death()
+
+    def on_get_hit(self, damage, knockback, crit):
+        if crit:
+            damage *= r.randrange(2, 3 + 1)
+        if damage >= self.damage_resistance:
+            damage -= self.damage_resistance
+        else:
+            damage = 0
+        self.hp -= damage
+
+    def on_death(self):
+        self.kill()
+
+    def on_hit(self, target):
+        target.on_get_hit(self.damage, self.knockback, r.randrange(0, 1 + 1))
+
+
+
+'''
+class Slizen(NPC):
+    def __init__(self):
+        super().__init__("textures/slizen.jpg")  Пример того, что должен будет делать Рома
+        self.velocity
+        self.contact_damage
+'''
 
 
 class Item(Object):
