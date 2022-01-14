@@ -88,10 +88,10 @@ class Player(Object):
                     self.rect.move_ip(0, (self.rect.y - i.rect.y + i.rect.height) * -1)
                     i.player_collide["top"] = True
 
-        """for i in objs.sprites():
+        for i in objs.sprites():
             if self.rect.colliderect(i.rect):
-                self.rect.y = i.rect.y - self.rect.height - 1  # Пассивная обработка, которая заставит игрока непрерывно стоять сверху блока. Когда мы доделаем падение, будет весьма полезно
-                i.player_collide["top"] = True"""
+                self.rect.move_ip(0, (self.rect.y - i.rect.y + i.rect.height -3) * -1) # Пассивная обработка, которая заставит игрока непрерывно стоять сверху блока. Когда мы доделаем падение, будет весьма полезно
+                i.player_collide["top"] = True
         if self.i_frames:
             self.i_frames -= 1
             print(f"Фреймы: {self.i_frames}")
