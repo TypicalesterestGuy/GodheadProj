@@ -1,5 +1,5 @@
 from Camera import *
-
+# Дедлайн сегодня
 pygame.init()
 settings = {}
 sprites_group = pygame.sprite.Group()
