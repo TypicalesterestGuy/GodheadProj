@@ -13,6 +13,21 @@ with open("settings.txt") as f:
             FPS = int(i[4:])
 
 
+class Button:
+    def __init__(self, width, height, enactive_color, active_color):
+        self.width = width
+        self.height = height
+        self.enactive_color = enactive_color
+        self.active_color = active_color
+
+    def draw(self, x, y, text, action=None):
+        mouse = pygame.mouse.get_pos()
+
+        if x < mouse[0] < x + self.width:
+            if y < mouse[1] < y + self.height:
+                pygame.draw.rect()
+
+
 # Моя ветка
 class Object(pygame.sprite.Sprite):  # Создание базового объекта
     def __init__(self, path, coords, *args):
@@ -94,7 +109,7 @@ class Player(Object):
         for i in objs.sprites():
             if self.rect.colliderect(i.rect):
                 self.rect.move_ip(0, (
-                            self.rect.y - i.rect.y + i.rect.height - 3) * -1)  # Пассивная обработка, которая заставит игрока непрерывно стоять сверху блока. Когда мы доделаем падение, будет весьма полезно
+                        self.rect.y - i.rect.y + i.rect.height - 3) * -1)  # Пассивная обработка, которая заставит игрока непрерывно стоять сверху блока. Когда мы доделаем падение, будет весьма полезно
                 i.player_collide["top"] = True
         if self.i_frames:
             self.i_frames -= 1
