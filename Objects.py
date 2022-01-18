@@ -1,5 +1,4 @@
 import random as r
-from math import sin, cos, radians
 
 import pygame
 
@@ -13,26 +12,11 @@ with open("settings.txt") as f:
             FPS = int(i[4:])
 
 
-class Button:
-    def __init__(self, width, height, enactive_color, active_color):
-        self.width = width
-        self.height = height
-        self.enactive_color = enactive_color
-        self.active_color = active_color
-
-    def draw(self, x, y, text, action=None):
-        mouse = pygame.mouse.get_pos()
-
-        if x < mouse[0] < x + self.width:
-            if y < mouse[1] < y + self.height:
-                pygame.draw.rect()
-
-
 # Моя ветка
 class Object(pygame.sprite.Sprite):  # Создание базового объекта
     def __init__(self, path, coords, *args):
+        """Аргументы: path - путь к изображению спрайта, coords - коордтнаты на поле"""
         super().__init__(*args)
-
         self.image = pygame.image.load(path)
         self.rect = self.image.get_rect()
         self.x = self.rect.x
@@ -41,9 +25,9 @@ class Object(pygame.sprite.Sprite):  # Создание базового объ�
         self.rect.x, self.rect.y = coords
         self.reform(*resolution)
 
-    def reform(self, w, h):  # Изменение размеров отгносительно размеров окна
-        # (Элес) Я изменил механизм.
-        # Мы меняли лишь положение картинки и хитбокс, но непосредственно размер изображения не менялся
+    def reform(self, w, h):
+        """Изменение размеров спрайта относительно размеров окна
+        w, h - размеры окна"""
         self.image = pygame.transform.scale(self.image,
                                             pygame.rect.Rect(self.rect.x, self.rect.y, self.rect.width * (
                                                     w / 1920),
@@ -61,7 +45,9 @@ class Object(pygame.sprite.Sprite):  # Создание базового объ�
 
 
 class Player(Object):
+    """Класс Игрока"""
     def __init__(self, path, coords, speed=500, *args):
+        """path - путь к спрайту, coords - расположение, speed - скорость перемещения в пикселях в секунду, по умолчанию 500"""
         self.speed = speed
         super().__init__(path, coords, *args)
         self.hp = 100
@@ -74,15 +60,17 @@ class Player(Object):
         self.fall_speed = 5
 
     def reform(self, w, h):
+        """w, h - размеры окна, изменяет спрайт"""
         super().reform(w, h)
         self.speed /= FPS
 
     def update(self, events, m_pos, keys, objs, screen,
-               *args):  # Теперь игрок просит список твердых объектов, дабы проверить, где он собсна среди них. Предлагаю сюда посылать только объекты сугубо на экране
+               *args):
+        """Обновление покадрово, events - список событий pygame, keys - нажатые клавиши, objs - объекты на экране, screen - полотно игрока"""
         super().update(*args)
         if keys[pygame.K_LEFT]:
             self.rect = self.rect.move(-self.speed,
-                                       0)  # Движение поменял на move. Теперь скорость одинакова во все стороны.
+                                       0)
             for i in objs.sprites():
                 if self.rect.colliderect(i.rect):
                     self.rect.move_ip((self.rect.x - i.rect.x - self.rect.width) * -1, 0)
@@ -109,7 +97,7 @@ class Player(Object):
         for i in objs.sprites():
             if self.rect.colliderect(i.rect):
                 self.rect.move_ip(0, (
-                        self.rect.y - i.rect.y + i.rect.height - 3) * -1)  # Пассивная обработка, которая заставит игрока непрерывно стоять сверху блока. Когда мы доделаем падение, будет весьма полезно
+                            self.rect.y - i.rect.y + i.rect.height - 3) * -1)  # Пассивная обработка, которая заставит игрока непрерывно стоять сверху блока. Когда мы доделаем падение, будет весьма полезно
                 i.player_collide["top"] = True
         if self.i_frames:
             self.i_frames -= 1
@@ -129,6 +117,7 @@ class Player(Object):
                 self.fall_speed = 5
 
     def on_get_hit(self, damage, knockback, crit, enemy):
+        """Вызывается при получении игроком урона. damage - урон, knockback - отбрасывание, crit - был ли нанесён крит, enemy - источник урона"""
         if crit:
             damage *= r.randrange(2, 3 + 1)
         if damage >= self.defense:
@@ -147,6 +136,7 @@ class Player(Object):
 
 class SolidObj(Object):
     def __init__(self, path, coords, *args):
+        """Твёрдый объект. path - путь к текстуре, coords - координаты на поле"""
         super().__init__(path, coords, *args)
         self.player_collide = {"right": False,
                                "left": False,
@@ -169,12 +159,14 @@ class SolidObj(Object):
                                "top": False,
                                "down": False}
 
-    def on_collide(self):  # Этот метод следует заменить на on_player_collide
+    def on_collide(self):
+        """Вызывается при столкновении чего либо с блоком"""
         pass
 
 
 class Mob(Object):
     def __init__(self, path, coords, *args):
+        """Нестатичный объект. path - путь к текстуре, coords - координаты на поле"""
         super().__init__(path, coords, *args)
         self.ai_list = [0, 0, 0]
         self.velocity = [0, 0]
@@ -184,16 +176,20 @@ class Mob(Object):
 
     def update(self, *args):
         super().update(*args)
-        self.rect = self.rect.move(*self.velocity)
+        if any(self.velocity):
+            self.rect = self.rect.move(*self.velocity)
         self.ai()
 
     def ai(self, *args):
+        """Внутренний ИИ. Вызывается при каждом обновлении"""
         pass
 
 
 class NPC(Mob):
-    def __init__(self, path, coords, *args):
+    def __init__(self, path, coords, screen, *args):
+        """Класс НПС. path - путь к текстуре, coords - координаты на поле"""
         super().__init__(path, coords, *args)
+        self.screen = screen
         self.friendly = False
         self.hp = 0
         self.knockback = 0
@@ -203,6 +199,7 @@ class NPC(Mob):
         self.boss = False
 
     def update(self, tiles, objs, player, *args):
+        """Обновление, вызывается каждый такт. tiles - группа SolidObj-спрайтов, objs - общие объекты, player - игрок"""
         super().update(*args)
         for object in objs.sprites():
             if self.rect.colliderect(object.rect) and object.__class__.__name__ != "Player":
@@ -213,6 +210,7 @@ class NPC(Mob):
             self.on_death()
 
     def on_get_hit(self, damage, knockback, crit):
+        """Вызывается при получении урона мобом. damage - полученный урон, knockback - отбрасывание"""
         if crit:
             damage *= r.randrange(2, 3 + 1)
         if damage >= self.damage_resistance:
@@ -222,38 +220,45 @@ class NPC(Mob):
         self.hp -= damage
 
     def on_death(self):
+        """Вызывается при смерти"""
         self.kill()
 
     def on_hit(self, target):
+        """Вызывается при нанесении удара. target - тот, кому удар был нанесён"""
         target.on_get_hit(self.damage, self.knockback, r.randrange(0, 1 + 1))
 
 
 class testEnemy(NPC):
-    def __init__(self, coords, *args):
-        super().__init__("textures/slizen.png", coords, *args)
+    """Простой враг"""
+
+    def __init__(self, coords, screen, *args):
+        """Текстуру указывать при создании класса не нужно"""
+        super().__init__("textures/slizen.png", coords, screen, *args)
         self.velocity = [0, 0]
         self.hp = 1000
         self.knockback = 10
+        self.contact_damage = True
         self.player_pos = (0, 0)
         self.flag = False
         self.radius = 0
 
     def update(self, tiles, objs, player, *args):
+        """при обновлении"""
         super().update(tiles, objs, player, *args)
         self.player_pos = player.rect.centerx, player.rect.centery
 
     def ai(self):
-        self.ai_list[0] += 5
-        if self.ai_list[1] > 100:
-            self.flag = False
-        if self.ai_list[1] < -10:
-            self.flag = True
-        if self.flag:
-            self.ai_list[1] += 5
+        self.ai_list[0] += 1
+        if self.ai_list[0] >= 600:
+            self.on_death()
+            self.contact_damage = False
+
+    def on_death(self):
+        self.ai_list[1] += 1
+        if self.ai_list[1] < 60:
+            pygame.draw.rect(self.screen, (255, 0, 0), self.rect, self.ai_list[1])
         else:
-            self.ai_list[1] -= 5
-        self.rect.centerx = self.player_pos[0] + (self.ai_list[1] + self.radius) * cos(radians(self.ai_list[0]))
-        self.rect.centery = self.player_pos[1] + (self.ai_list[1] + self.radius) * sin(radians(self.ai_list[0]))
+            super().on_death()
 
 
 class Item(Object):
