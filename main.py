@@ -7,10 +7,13 @@ solids_objs = pygame.sprite.Group()
 mob_group = pygame.sprite.Group()
 all_objs = pygame.sprite.Group()
 
-"""for i in range(100):
+for i in range(10):
     mob = testEnemy((r.randrange(0, 1920), r.randrange(0, 1080)))
+    mob.radius = r.choice([150, 300])
+    mob.ai_list[0] = i
+    mob.ai_list[1] = i
     mob_group.add(mob)
-    all_objs.add(mob)"""
+    all_objs.add(mob)
 
 with open("settings.txt", "r", encoding="utf-8") as f:
     for i in f.read().split("\n"):

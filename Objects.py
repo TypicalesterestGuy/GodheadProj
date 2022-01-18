@@ -1,4 +1,5 @@
 import random as r
+from math import sin, cos, radians
 
 import pygame
 
@@ -49,11 +50,13 @@ class Player(Object):
         self.speed = speed
         super().__init__(path, coords, *args)
         self.hp = 100
+        self.fly = False
         self.defense = 10
         self.damage_immune = False
         self.i_frames = 0
         self.damage = 0
         self.knockbacking = 0
+        self.fall_speed = 5
 
     def reform(self, w, h):
         super().reform(w, h)
@@ -90,7 +93,8 @@ class Player(Object):
 
         for i in objs.sprites():
             if self.rect.colliderect(i.rect):
-                self.rect.move_ip(0, (self.rect.y - i.rect.y + i.rect.height -3) * -1) # Пассивная обработка, которая заставит игрока непрерывно стоять сверху блока. Когда мы доделаем падение, будет весьма полезно
+                self.rect.move_ip(0, (
+                            self.rect.y - i.rect.y + i.rect.height - 3) * -1)  # Пассивная обработка, которая заставит игрока непрерывно стоять сверху блока. Когда мы доделаем падение, будет весьма полезно
                 i.player_collide["top"] = True
         if self.i_frames:
             self.i_frames -= 1
@@ -100,7 +104,14 @@ class Player(Object):
             self.damage_immune = False
         if self.knockbacking:
             self.knockbacking -= 1
-            self.rect.x -= 1
+            self.rect.move(self.knockbacking, 0)
+        if not self.fly:
+            if not self.rect.collidelist([i.rect for i in objs.sprites()]):
+                self.rect.move_ip(0, self.fall_speed * -1)
+                print("ok")
+                self.fall_speed **= 2
+            else:
+                self.fall_speed = 5
 
     def on_get_hit(self, damage, knockback, crit, enemy):
         if crit:
@@ -205,12 +216,29 @@ class NPC(Mob):
 class testEnemy(NPC):
     def __init__(self, coords, *args):
         super().__init__("textures/slizen.png", coords, *args)
-        self.velocity = [0, 5]
+        self.velocity = [0, 0]
         self.hp = 1000
-        self.knockback = 90
+        self.knockback = 10
+        self.player_pos = (0, 0)
+        self.flag = False
+        self.radius = 0
+
+    def update(self, tiles, objs, player, *args):
+        super().update(tiles, objs, player, *args)
+        self.player_pos = player.rect.centerx, player.rect.centery
 
     def ai(self):
-        pass
+        self.ai_list[0] += 5
+        if self.ai_list[1] > 100:
+            self.flag = False
+        if self.ai_list[1] < -10:
+            self.flag = True
+        if self.flag:
+            self.ai_list[1] += 5
+        else:
+            self.ai_list[1] -= 5
+        self.rect.centerx = self.player_pos[0] + (self.ai_list[1] + self.radius) * cos(radians(self.ai_list[0]))
+        self.rect.centery = self.player_pos[1] + (self.ai_list[1] + self.radius) * sin(radians(self.ai_list[0]))
 
 
 class Item(Object):
